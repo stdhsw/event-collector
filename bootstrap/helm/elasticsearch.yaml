@@ -1,0 +1,64 @@
+---
+clusterName: "elasticsearch"
+nodeGroup: "master"
+
+roles:
+  - master
+  - data
+  - data_content
+  - data_hot
+  - data_warm
+  - data_cold
+  - ingest
+  - ml
+  - remote_cluster_client
+  - transform
+
+replicas: 3
+minimumMasterNodes: 2
+
+# cluster config
+# 테스트 환경이라 보안 설정을 끔
+esConfig:
+  elasticsearch.yml: |
+    xpack.security.enabled: false
+
+createCert: true
+
+esJavaOpts: "-Xmx512m -Xms512m" # example: "-Xmx1g -Xms1g"
+
+resources:
+  requests:
+    cpu: "300m"
+    memory: "1Gi"
+  limits:
+    cpu: "300m"
+    memory: "1Gi"
+
+protocol: https
+httpPort: 9200
+transportPort: 9300
+
+service:
+  enabled: true
+  type: NodePort
+  nodePort: "30090"
+
+persistence:
+  enabled: true
+
+volumeClaimTemplate:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+
+# 개인 로컬 환경의 리소스 제한으로 soft로 설정하였습니다.
+antiAffinity: "soft"
+
+
+createCert: true
+# Disable it to use your own elastic-credential Secret.
+secret:
+  enabled: true
+  password: "elastic" # generated randomly if not defined

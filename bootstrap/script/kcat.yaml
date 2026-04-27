@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kcat
+  namespace: mytest
+spec:
+  containers:
+    - name: kcat
+      image: edenhill/kcat:1.7.1
+      command: ["tail"]
+      args: ["-f", "/dev/null"]
+  terminationGracePeriodSeconds: 0

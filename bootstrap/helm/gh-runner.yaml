@@ -1,0 +1,10 @@
+runnerScaleSetName: "runner-set"
+
+containerMode:
+  type: "dind"
+  kubernetesModeWorkVolumeClaim:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: "dynamic-blob-storage"
+    resources:
+      requests:
+        storage: 1Gi
