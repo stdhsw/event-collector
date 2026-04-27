@@ -313,23 +313,30 @@ volumeMounts:
 
 개발 및 테스트 환경에서는 Elasticsearch와 Kafka를 Helm을 통해 설치합니다.
 
+> Helm 차트는 `.tgz` 압축본으로 저장소에 포함되어 있습니다. 동일 버전을 다시 받고 싶다면 다음 명령을 사용하세요.
+>
+> ```bash
+> helm pull elastic/elasticsearch --version 8.5.1 -d bootstrap/helm/elasticsearch
+> helm pull strimzi/strimzi-kafka-operator --version 0.48.0 -d bootstrap/helm/strimzi
+> ```
+
 ### Elasticsearch 설치
 
 ```bash
 NAMESPACE=event-collector
 
 # Elasticsearch 설치 (3노드 구성)
-helm upgrade --install elasticsearch bootstrap/helm/elasticsearch \
+helm upgrade --install elasticsearch bootstrap/helm/elasticsearch/elasticsearch-8.5.1.tgz \
     --namespace $NAMESPACE --create-namespace \
-    -f bootstrap/helm/elasticsearch.yaml
+    -f bootstrap/helm/elasticsearch/values.yaml
 
 # 배포 확인
 kubectl get pods -n $NAMESPACE
 
 # ILM 정책, 인덱스 템플릿, 초기 인덱스 생성
-./bootstrap/helm/elasticsearch_ilm.sh
-./bootstrap/helm/elasticsearch_template.sh
-./bootstrap/helm/elasticsearch_index.sh
+./bootstrap/helm/elasticsearch/elasticsearch_ilm.sh
+./bootstrap/helm/elasticsearch/elasticsearch_template.sh
+./bootstrap/helm/elasticsearch/elasticsearch_index.sh
 ```
 
 ### Kafka 클러스터 설치 (Strimzi)
@@ -338,13 +345,13 @@ kubectl get pods -n $NAMESPACE
 NAMESPACE=event-collector
 
 # Strimzi Kafka Operator 설치
-helm upgrade --install strimzi bootstrap/helm/strimzi-kafka-operator \
+helm upgrade --install strimzi bootstrap/helm/strimzi/strimzi-kafka-operator-helm-3-chart-0.48.0.tgz \
     --namespace $NAMESPACE --create-namespace \
-    -f bootstrap/helm/strimzi.yaml
+    -f bootstrap/helm/strimzi/values.yaml
 
 # Kafka 클러스터 및 토픽 생성
-kubectl apply -f bootstrap/helm/kafka_cluster.yaml -n $NAMESPACE
-kubectl apply -f bootstrap/helm/kafka_topic.yaml -n $NAMESPACE
+kubectl apply -f bootstrap/helm/strimzi/kafka_cluster.yaml -n $NAMESPACE
+kubectl apply -f bootstrap/helm/strimzi/kafka_topic.yaml -n $NAMESPACE
 
 # 배포 확인
 kubectl get pods -n $NAMESPACE
