@@ -1,0 +1,40 @@
+name: Test Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  go-test:
+    runs-on: runner-set
+    steps:
+      - name: Checkout code
+        # 현재 브랜치의 소스 코드를 runner에 체크아웃한다
+        uses: actions/checkout@v4
+
+      - name: Set up golang
+        # vars.GH_GO_VERSION에 지정된 버전으로 Go 환경을 설정하고 모듈 캐시를 활성화한다
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ vars.GH_GO_VERSION }}
+          cache: true
+
+      - name: Verify dependencies
+        # go.sum과 실제 다운로드된 모듈의 해시를 비교하여 의존성 무결성을 검증한다
+        run: go mod verify
+
+      - name: Run vet
+        # Go 정적 분석 도구로 잠재적인 버그와 코드 문제를 사전에 검출한다
+        run: go vet ./...
+
+      - name: Run tests
+        # APP_ENV=dev로 no-op logger를 사용하고 -race로 race condition을 감지하며
+        # -timeout 300s로 hang 방지 후 전체 패키지 테스트를 실행한다
+        env:
+          APP_ENV: dev
+          KAFKA_BROKERS: ${{ vars.KAFKA_BROKERS }}
+          KAFKA_TOPIC: ${{ vars.KAFKA_TOPIC }}
+          ELASTICSEARCH_ADDR: ${{ vars.ELASTICSEARCH_ADDR }}
+          ELASTICSEARCH_INDEX: ${{ vars.ELASTICSEARCH_INDEX }}
+          ELASTICSEARCH_USER: ${{ secrets.ELASTICSEARCH_USER }}
+          ELASTICSEARCH_PASSWORD: ${{ secrets.ELASTICSEARCH_PASSWORD }}
+        run: go test -v -race -timeout 300s ./...
