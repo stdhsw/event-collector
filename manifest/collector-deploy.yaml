@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector-config
+  namespace: event-collector
+data:
+  config.yaml: |
+    kube:
+      namespaces: []
+      
+    kafka:
+      enable: true
+      brokers:
+        - mytest-kafka-kafka-bootstrap:9092
+      topic: event
+      timeout: 3s
+      retry: 3
+      retryBackoff: 100ms
+      flushMsg: 1000
+      flushTime: 500ms
+
+    elasticsearch:
+      enable: true
+      addresses:
+        - https://elasticsearch-master:9200
+      user: "elastic"
+      pass: "elastic"
+      index: "event"
+
+    volume:
+      enable: true
+      fileName: event
+      filePath: /var/lib/mytest
+      maxFileCount: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: event-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collector
+  template:
+    metadata:
+      labels:
+        app: collector
+    spec:
+      serviceAccountName: event-sa
+      containers:
+        - name: collector
+          image: collector:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOG_LEVEL
+              value: debug
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/collector
+      volumes:
+        - name: config-volume
+          configMap:
+            name: collector-config

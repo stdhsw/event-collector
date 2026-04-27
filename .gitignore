@@ -1,0 +1,9 @@
+# 개인 문서 정리를 위한 파일 및 디렉토리
+blog/
+obsidian/
+
+# 로컬 테스트를 위한 파일
+.envrc
+test/
+TODO.md
+todo.md

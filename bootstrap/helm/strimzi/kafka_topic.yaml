@@ -1,0 +1,46 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: test-topic
+  namespace: event-collector
+  labels:
+    strimzi.io/cluster: event-cluster
+spec:
+  partitions: 3  # 파티션 개수
+  replicas: 2  # 복제 개수
+  config:
+    retention.ms: 604800000  # 7일
+    segment.bytes: 1073741824  # 1GB
+    cleanup.policy: "delete"  # 기간 지나면 삭제
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: event
+  namespace: event-collector
+  labels:
+    strimzi.io/cluster: event-cluster
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+    cleanup.policy: "delete"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: event-dlq
+  namespace: event-collector
+  labels:
+    strimzi.io/cluster: event-cluster
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+    cleanup.policy: "delete"
